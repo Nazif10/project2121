@@ -66,6 +66,11 @@
 ;; END REGISTER DEFS
 ;---------------------------------------------------------------------------------
 
+;---------------------------------------------------------------------------------
+;; EQU declarations
+;---------------------------------------------------------------------------------
+.equ NUMSTATIONS = 0
+
 
 
 ;---------------------------------------------------------------------------------
@@ -81,9 +86,25 @@ Station_names: ;;holds a string of station names separated by '.' character
 Station_times: ;;holds time between consecutive stations
 	.byte 21
 
+temp_letters: ;;temporary hold for keys pressed before letter is displayed on lcd
+	.byte 8
+
+status:	;;holds an int to represent what stage of simulation we are in
+	.byte 1
+
+;---------------------------------------------------------------------------------
+;; END DSEG
+;---------------------------------------------------------------------------------
+
+;---------------------------------------------------------------------------------
+;; CSEG
+;---------------------------------------------------------------------------------
 .cseg
 jmp RESET
 
+;---------------------------------------------------------------------------------
+;; END CSEG
+;---------------------------------------------------------------------------------
 .org 0x72
 RESET:
 ldi temp, low(RAMEND)
@@ -95,7 +116,7 @@ STS DDRL, temp     ; cannot use out
 ser temp
 out DDRC, temp ; Make PORTC all outputs
 out PORTC, temp ; Turn on all the LEDs
-; main keeps scanning the keypad to find which key is pressed.
+; keypad keeps scanning the keypad to find which key is pressed.
 
 ;intialise lcd 
 
@@ -118,29 +139,31 @@ do_lcd_command 0b00000110 ; increment, no display shift
 do_lcd_command 0b00001110 ; Cursor on, bar, no blink
 
 
-do_lcd_data 'E'
-do_lcd_data 'N'
-do_lcd_data 'T'
-do_lcd_data 'E'
-do_lcd_data 'R'
 
-do_lcd_data 'N'
-do_lcd_data 'U'
-do_lcd_data 'M'
-do_lcd_data 'B'
-do_lcd_data 'E'
-do_lcd_data 'R'
-do_lcd_data ' '
-do_lcd_data 'O'
-do_lcd_data 'F'
-do_lcd_data 'S'
-do_lcd_data 'T'
+	do_lcd_data 'N'
+	do_lcd_data 'U'
+	do_lcd_data 'M'
 
+	do_lcd_data ' '
+	do_lcd_data 'S'
+	do_lcd_data 'T'
+	do_lcd_data 'A'
+	do_lcd_data 'T'
+	do_lcd_data 'I'
+	do_lcd_data 'O'
+	do_lcd_data 'N'
+	do_lcd_data 'S'
 
+	clr temp
+	sts status,temp
+	rjmp main
 
 main:
+	lds temp,status
+	cpi temp,NUMSTATIONS	
+	breq keypad
 
-
+keypad:
 
 ldi mask, INITCOLMASK ; initial column mask
 clr col ; initial column
@@ -167,7 +190,7 @@ and temp2, mask ; check masked bit
 brne skipconv ; if the result is non-zero,
 ; we need to look again
 rcall convert ; if bit is clear, convert the bitcode
-jmp main ; and start again
+jmp keypad ; and start again
 
 skipconv:
 	inc row ; else move to the next row
@@ -176,7 +199,7 @@ skipconv:
          
 nextcol:     
 	cpi col, 3 ; check if we^Òre on the last column
-	breq main ; if so, no buttons were pushed,
+	breq keypad ; if so, no buttons were pushed,
 	; so start again.
 
 	sec ; else shift the column mask:
@@ -230,7 +253,7 @@ convert_end:
 
 	add temp,tempNum
 	inc counter
-	cpi counter,16
+	cpi counter,10
 	brlo lcd_limit
 		do_lcd_command 0b00000001 ; clear display
 		clr counter	
