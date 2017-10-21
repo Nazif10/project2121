@@ -168,7 +168,7 @@ do_lcd_command 0b00001110 ; Cursor on, bar, no blink
 ;---------------------------------------------------------------------------------
 
 main:
-
+	clr temp
 	lds temp,status
 
 	cpi temp,NUMSTATIONS	
@@ -180,6 +180,7 @@ main:
 
 
 load_num_stations:
+	
 	rcall keypad
 	clr temp
 	ldi temp,STATIONNAMES
@@ -204,6 +205,7 @@ load_station_names:
 	do_lcd_data 'S'
 	
 keypad:
+push temp
 
 ldi mask, INITCOLMASK ; initial column mask
 clr col ; initial column
@@ -332,6 +334,7 @@ finish_input: //UP TO HERE /////////////////////////////////////////////////////
 	ldi yh,high(temp_letters)
 	ld temp,y+ ;;copy in what we received from user input into num stations dseg
 	sts Num_stations,temp
+	pop temp
 	ret ;;ret call here should return back to load_num_stations to line after keypad is called
 
 	
