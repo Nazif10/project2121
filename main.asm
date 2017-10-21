@@ -70,7 +70,7 @@
 ;; EQU declarations
 ;---------------------------------------------------------------------------------
 .equ NUMSTATIONS = 0
-
+.equ STATIONNAMES = 1
 
 
 ;---------------------------------------------------------------------------------
@@ -163,14 +163,46 @@ do_lcd_command 0b00001110 ; Cursor on, bar, no blink
 	sts status,temp
 	rjmp main
 
+;---------------------------------------------------------------------------------
+;; MAIN BLOCK
+;---------------------------------------------------------------------------------
+
 main:
+
 	lds temp,status
+
 	cpi temp,NUMSTATIONS	
 	breq load_num_stations
 
-load_num_stations:
-	jmp keypad
+	cpi temp,STATIONNAMES
+	breq load_station_names
 
+
+
+load_num_stations:
+	rcall keypad
+	clr temp
+	ldi temp,STATIONNAMES
+	sts status,temp
+	jmp main
+
+load_station_names:
+	do_lcd_command 0b00000001 ; clear display
+	
+	do_lcd_data 'N'
+	do_lcd_data 'A'
+	do_lcd_data 'M'
+
+	do_lcd_data 'E'
+	do_lcd_data 'S'
+	do_lcd_data 'T'
+	do_lcd_data 'A'
+	do_lcd_data 'T'
+	do_lcd_data 'I'
+	do_lcd_data 'O'
+	do_lcd_data 'N'
+	do_lcd_data 'S'
+	
 keypad:
 
 ldi mask, INITCOLMASK ; initial column mask
@@ -258,8 +290,20 @@ zero:
 	ldi tempNum,48
 	clr temp ; set to zero
 convert_end:
+	;;cpi tempNum,48 when it's a number for if statement later
 
+
+
+	cpi temp,14 ;if star is encountered break out of keypad input and go to next stage of emulator
+	breq finish_input
+	 
 	add temp,tempNum
+	;;;;;;experimental;;;;
+	ldi yl,low(temp_letters)
+	ldi yh,high(temp_letters)
+	
+	st y+,temp
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	inc counter
 	cpi counter,10
 	brlo lcd_limit
@@ -281,6 +325,19 @@ convert_end:
 
 	out PORTC, temp ; write value to PORTC
 	ret ; return to caller
+
+
+finish_input: //UP TO HERE /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	ldi yl,low(temp_letters)
+	ldi yh,high(temp_letters)
+	ld temp,y+ ;;copy in what we received from user input into num stations dseg
+	sts Num_stations,temp
+	ret ;;ret call here should return back to load_num_stations to line after keypad is called
+
+	
+	
+
+
 
 .equ LCD_RS = 7
 .equ LCD_E = 6
