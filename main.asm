@@ -100,6 +100,19 @@ do_lcd_data 'T'
 do_lcd_data 'E'
 do_lcd_data 'R'
 
+do_lcd_data 'N'
+do_lcd_data 'U'
+do_lcd_data 'M'
+do_lcd_data 'B'
+do_lcd_data 'E'
+do_lcd_data 'R'
+do_lcd_data ' '
+do_lcd_data 'O'
+do_lcd_data 'F'
+do_lcd_data 'S'
+do_lcd_data 'T'
+
+
 
 main:
 
