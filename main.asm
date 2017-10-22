@@ -211,9 +211,12 @@ load_station_names:
 	do_lcd_data 'N'
 	do_lcd_data 'S'
 	
+	jmp end
+	end: rjmp end
 
+return :  //////////////HACK TOFIX RCALL ISSUE 
+	ret
 keypad:
-push temp
 
 ldi mask, INITCOLMASK ; initial column mask
 clr col ; initial column
@@ -237,9 +240,12 @@ clr row ; initial row
 rowloop:      
 mov temp2, temp
 and temp2, mask ; check masked bit
-brne skipconv ; if the result is non-zero,
+brne skipconv ; if the result is non-zero, ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;UNCOMMENT
 ; we need to look again
-rjmp convert ; if bit is clear, convert the bitcode               ;;SNEAKY HUI WU RIGHT HERE CHANGED TO RJMP FROM RCALL TO STOP INTERFERENCE 
+rcall convert ; if bit is clear, convert the bitcode            ;;;KEY CHANGE HERE AFTER HERE!!!         
+cpi temp,14 ;;;;if user strikes * then rather than jmp back into keypad go back to keypad caller
+breq return ;;;;This return will call back to caller from main 
+
 jmp keypad ; and start again
 
 skipconv:
@@ -266,6 +272,7 @@ nextcol:
 	; Inputs come from registers row and col and output is in
 	; temp.
 convert:
+	;ldi row,3;                               ;;;;;;;;;;;;;;;;;;;UNCOMMENT 
 	cpi col, 3 ; if column is 3 we have a letter
 	breq letters
 	cpi row, 3 ; if row is 3 we have a symbol or 0
@@ -285,6 +292,7 @@ letters:
 	add temp, row ; increment from 0xA by the row value
 	jmp convert_end
 symbols:
+	;ldi col,0 ;;;;;;;;;;;;;;;;;;;;UNCOMMENT TO DEBUG VIA CPU
 	cpi col, 0 ; check if we have a star
 	breq star
 	cpi col, 1 ; or if we have zero
@@ -304,8 +312,8 @@ convert_end:
 
 
 
-	cpi temp,14 ;if star is encountered break out of keypad input and go to next stage of emulator
-	breq finish_input
+	;cpi temp,14 ;if star is encountered break out of keypad input and go to next stage of emulator
+	;breq finish_input
 	 
 	add temp,tempNum
 	;;;;;;experimental;;;;
@@ -325,7 +333,7 @@ convert_end:
 		do_lcd_data_mov
 
 	sub temp,tempNum
-
+	;ldi temp,14
 	sleep50ms
 	sleep50ms
 	sleep50ms
@@ -348,7 +356,7 @@ finish_input: //UP TO HERE /////////////////////////////////////////////////////
 	ret ;;ret call here should return back to load_num_stations to line after keypad is called
 
 	
-	
+
 
 
 
