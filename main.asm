@@ -50,7 +50,7 @@
 ;---------------------------------------------------------------------------------
 ;; REGISTER DEFS
 ;---------------------------------------------------------------------------------
-.def incrementer = r15
+.def incrementer = r26
 .def temp =r23
 .def row =r17
 .def col =r18
@@ -205,10 +205,10 @@ load_station_names:
 
 	ld temp,y+
 	mov temp2,temp
-	ldi counter,1
+	ldi incrementer,1
 
 	input_names:
-	cp counter,temp2
+	cp incrementer,temp2
 
 	breq done_stat_names
 	do_lcd_command 0b00000001 ; clear display
@@ -245,7 +245,7 @@ load_station_names:
 return :  //////////////HACK TOFIX RCALL ISSUE 
 	ret
 keypad:
-push counter
+;push counter
 ldi mask, INITCOLMASK ; initial column mask
 clr col ; initial column
 
@@ -401,14 +401,8 @@ continue:
 	else:
 
 	out PORTC, temp ; write value to PORTC
-	pop counter
+	;pop counter
 	ret ; return to caller
-
-
-
-
-	
-
 
 
 
