@@ -105,12 +105,13 @@ status:	;;holds an int to represent what stage of simulation we are in
 ;; CSEG
 ;---------------------------------------------------------------------------------
 .cseg
-jmp RESET
 
+rjmp RESET
+.org 0x72
 ;---------------------------------------------------------------------------------
 ;; END CSEG
 ;---------------------------------------------------------------------------------
-.org 0x72
+
 RESET:
 ldi temp, low(RAMEND)
 out SPL, temp
@@ -174,6 +175,7 @@ main:
 	cpi temp,NUMSTATIONS	
 	breq load_num_stations
 
+
 	cpi temp,STATIONNAMES
 	breq load_station_names
 
@@ -183,9 +185,14 @@ load_num_stations:
 	
 	rcall keypad
 	clr temp
-	ldi temp,STATIONNAMES
+	ldi temp,1
 	sts status,temp
-	jmp main
+	ldi temp2,48
+	add temp,temp2
+	do_lcd_command 0b00000001 ; clear display
+	mov r16,temp
+	do_lcd_data_mov
+	rjmp main
 
 load_station_names:
 	do_lcd_command 0b00000001 ; clear display
@@ -204,6 +211,7 @@ load_station_names:
 	do_lcd_data 'N'
 	do_lcd_data 'S'
 	
+
 keypad:
 push temp
 
@@ -231,7 +239,7 @@ mov temp2, temp
 and temp2, mask ; check masked bit
 brne skipconv ; if the result is non-zero,
 ; we need to look again
-rcall convert ; if bit is clear, convert the bitcode
+rjmp convert ; if bit is clear, convert the bitcode               ;;SNEAKY HUI WU RIGHT HERE CHANGED TO RJMP FROM RCALL TO STOP INTERFERENCE 
 jmp keypad ; and start again
 
 skipconv:
@@ -330,6 +338,8 @@ convert_end:
 
 
 finish_input: //UP TO HERE /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	clr yl
+	clr yh
 	ldi yl,low(temp_letters)
 	ldi yh,high(temp_letters)
 	ld temp,y+ ;;copy in what we received from user input into num stations dseg
