@@ -1,0 +1,184 @@
+A Monorail Emulator User Design
+Nazif Ahmed & Regan Fung
+
+Contents:
+1.	Introduction
+2.	Wiring
+3.	Operation
+4.	Displays
+4.1	LED
+4.2	LCD Display
+5.	Modes
+5.1	Number of Stations
+5.2	Enter Station Names
+5.3	Travelling Between Stations
+5.4	Time Taken Between Stations
+5.5	Simulation of Monorail Route
+
+
+
+
+
+
+
+
+
+
+
+Introduction:
+This manual will describe in detail the operation and general setup of the simulation of a monorail emulator using the AVR microprocessor board. To run the configuration, open the project in AVR Studio, build the project and run the .hex file using Arduino.
+Wiring Configuration:
+Component	Function	Wiring
+Motor Configuration	Spin to simulate monorail engine	OpO - +5V (P11)
+OpE  - RDX3 (Port D)
+Mot - POT (Input) 
+Keypad 	Read in number and alphabet	(Port L) PL3-0– C0-3
+PL7-4 – R0-3  
+LCD 	Display info on LCD	BE – PA4 (Port A)
+RW – PA5
+E – PA6
+RS – PA7
+(LCD Data) D0-7 – PF0-7 (Port F)
+LED 		
+Push Buttons		
+Operation
+1.	Enter number of stations (maximum 10) to visit using the keypad. Alphabet will not be recognized
+2.	Enter Station names. To input letter, select number key with corresponding letter, then select the position of the letter. For example, if letter ‘C’ is required, select number 2, and then select the letter C on the right side of the keyboard, indicating the 3rd letter of keypad 2. To print whitespace, press ‘1’ + ‘A’. To indicate end of string, press ‘*’
+3.	Continue entering station names
+4.	Enter a number to indicate time from each station (maximum of 10 seconds), if time exceeds 10 seconds, error message will occur
+5.	Enter a number to indicate stop time of monorail
+6.	Message will appear, indicating completion of configuration and time of monorail simulation
+Displays
+There will be 2 separate displays to follow; LED and LCD
+The LCD screen will be where user inputs information about monorail route.
+The LED screen will be for aesthetics for Hasindu. REMEMBER TO CHANGE THIS PART
+Modes:
+The monorail will run in 5 modes:
+•	Enter number of stations
+•	Enter name of stations
+•	Enter time between stations
+•	Enter stop time at stations
+•	Running of simulation
+5.1 Number of stations:
+When the monorail system is started up, user will be asked for the number of stations. Keypad will only recognize numbers. 
+Keypad Buttons	Function	Notes
+0-9
+
+*
+
+#
+A
+B
+C
+D	Enter number of stations
+
+Indicate end of input
+
+-
+-
+-
+-
+-	Maximum of 10 stations
+
+Board will ask next question
+
+Redundant keys
+-
+-
+-
+-
+
+5.2 Name of Stations:
+Enter names of stations: Numbers will not be recognised
+Keypad Number	A (1st Position)	B (2nd (Position)	C (3rd Position)
+1			
+2	A	B	C
+3	D	E	F
+4	G	H	I
+5	J	K	L
+6	M	N	O
+7	P	R	S
+8	T	U	V
+9	W	X	Y
+
+Keypad Buttons	Function	Notes
+0-9
+
+*
+
+#
+A
+B
+C
+D	Key position of letter
+
+Indicate end of input
+
+-
+1st alpha position of number
+2nd alpha position of number
+3rd alpha position of number
+-	‘1’ + A = Whitespace
+
+
+
+For example, we want to type the letter K, we first press 5 as K is assigned to that number, then we press B to indicate we want the letter in the 2nd position:
+
+
+
+
+
+
+
+
+
+
+To print a white space: 1 + A
+
+
+
+
+
+
+
+
+
+
+5.3 Enter Time Between Stations
+Keypad Buttons	Function	Notes
+0-9
+
+*
+
+#
+A
+B
+C
+D	Enter time
+
+Indicate end of input
+
+-
+-
+-
+-
+-	Maximum of 10 seconds
+
+Board will ask next question
+
+Redundant keys
+-
+-
+-
+-
+
+Dhere will be 5 different displays within the LCD Display:
+1.	Please type the maximum number stations: x
+2.	Please type the name of Station x: xxxxxxx
+3.	The time from Station x to Station y is: x
+4.	The stop time of the monorail at any station is: x
+5.	Now the configuration is complete. Please wait for x seconds
+However, there will also be error message displays:
+1.	Error! Maximum number of stations is 10
+2.	Incorrect! The time from Station x to Station y is: 10
+
