@@ -98,6 +98,7 @@ temp_letters: ;;temporary hold for keys pressed before letter is displayed on lc
 status:	;;holds an int to represent what stage of simulation we are in
 	.byte 1
 
+
 ;---------------------------------------------------------------------------------
 ;; END DSEG
 ;---------------------------------------------------------------------------------
@@ -200,14 +201,15 @@ load_num_stations:
 load_station_names:
 
 
-	ldi yl,low(Num_stations)
-	ldi yh,high(Num_stations)
-
-	ld temp,y+
-	mov temp2,temp
+	
 	ldi incrementer,1
 
 	input_names:
+	ldi yl,low(Num_stations)	;grab number of stations from dseg
+	ldi yh,high(Num_stations)	;grab num_stations every iteration as temp2 changes when keypad is called
+	ldi temp,1	
+	ld temp2,y+
+	add temp2,temp				;add one as incrementer is indexed from 1 
 	cp incrementer,temp2
 
 	breq done_stat_names
@@ -257,7 +259,7 @@ ldi temp, 0xFF ; implement a delay so the
 
 delay:
 dec temp
-brne delay
+brne delay ;;;;;;;;;;;;;UNCOMMENT TO STOP DEBUGGING
 LDS temp, PINL ; read PORTL. Cannot use in 
 andi temp, ROWMASK ; read only the row bits
 cpi temp, 0xF ; check if any rows are grounded
@@ -268,7 +270,7 @@ clr row ; initial row
 rowloop:      
 mov temp2, temp
 and temp2, mask ; check masked bit
-brne skipconv ; if the result is non-zero, ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;UNCOMMENT
+brne skipconv ; if the result is non-zero, ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;UNCOMMENT DEBUG
 ; we need to look again
 
 
@@ -304,7 +306,7 @@ nextcol:
 	; Inputs come from registers row and col and output is in
 	; temp.
 convert:
-	;ldi row,3;                               ;;;;;;;;;;;;;;;;;;;UNCOMMENT 
+	;jmp convert_end                             ;;;;;;;;;;;;;;;;;;;UNCOMMENT DEBUG
 	cpi col, 3 ; if column is 3 we have a letter
 	breq letters
 	cpi row, 3 ; if row is 3 we have a symbol or 0
@@ -344,10 +346,10 @@ convert_end:
 
 
 
-	;cpi temp,14 ;if star is encountered break out of keypad input and go to next stage of emulator
-	;breq finish_input
-	 
-	add temp,tempNum
+
+	;ldi temp,5 ;;;;;;;;	UNCOMMENT DEBUG   (COMMENT)
+	;st z+,temp ;;;;;;;;;;;;;;;;;UNCOMMENT DEBUG  (COMMENT)
+	add temp,tempNum;;;;;;;;;;;UNCOMMENT DEBUG  (UNCOMMENT)
 	;;;;;;experimental;;;;
 	ldi yl,low(temp_letters)
 	ldi yh,high(temp_letters)
@@ -382,20 +384,22 @@ convert_end:
 		breq letter_print
 
 num_print:
+	;ldi temp,14
 	mov r16,temp
 	do_lcd_data_mov
 	jmp continue
 	
 letter_print:
+	;ldi temp,14						/////UNCOMMENT TO DEBUG
 													//ADD LETTER PROCESSING HERE //////////////////////
 	jmp continue 	
 
 continue:
-	sub temp,tempNum
-	;ldi temp,14
+	sub temp,tempNum    ;;;;;;; UNCOMMENT DEBUG
+	;ldi temp,14  ;;COMMENT TO DEBUG
 	sleep50ms
 	sleep50ms
-	sleep50ms
+	sleep50ms						////UNCOMMENT TO STOP DEBUG
 	sleep50ms
 
 	else:
