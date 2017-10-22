@@ -50,7 +50,7 @@
 ;---------------------------------------------------------------------------------
 ;; REGISTER DEFS
 ;---------------------------------------------------------------------------------
-
+.def incrementer = r15
 .def temp =r23
 .def row =r17
 .def col =r18
@@ -198,31 +198,46 @@ load_num_stations:
 	rjmp main
 
 load_station_names:
-	do_lcd_command 0b00000001 ; clear display
-	
-	do_lcd_data 'N'
-	do_lcd_data 'A'
-	do_lcd_data 'M'
 
-	do_lcd_data 'E'
-	do_lcd_data 'S'
-	do_lcd_data 'T'
-	do_lcd_data 'A'
-	do_lcd_data 'T'
-	do_lcd_data 'I'
-	do_lcd_data 'O'
-	do_lcd_data 'N'
-	do_lcd_data 'S'
-	
-	
+
 	ldi yl,low(Num_stations)
 	ldi yh,high(Num_stations)
 
 	ld temp,y+
+	mov temp2,temp
+	ldi counter,1
+
+	input_names:
+	cp counter,temp2
+
+	breq done_stat_names
+	do_lcd_command 0b00000001 ; clear display
+	do_lcd_data 'S'
+	do_lcd_data 'T'
+	do_lcd_data 'A'
+	do_lcd_data 'T'
+	do_lcd_data 'N'
+	do_lcd_data 'A'	
+	do_lcd_data 'M'
+	
 	ldi tempNum,48
-	add temp,tempNum
-	mov r16,temp
+	mov r16,incrementer
+	add r16,tempNum
 	do_lcd_data_mov
+	do_lcd_data ' '
+	inc incrementer 
+	rcall keypad
+	rjmp input_names
+
+	done_stat_names:
+	do_lcd_command 0b00000001 ; clear display
+	do_lcd_data 'D'
+	do_lcd_data 'O'
+	do_lcd_data 'N'
+	do_lcd_data 'E'
+	do_lcd_data '!'
+
+
 
 	jmp end
 	end: rjmp end
@@ -230,7 +245,7 @@ load_station_names:
 return :  //////////////HACK TOFIX RCALL ISSUE 
 	ret
 keypad:
-
+push counter
 ldi mask, INITCOLMASK ; initial column mask
 clr col ; initial column
 
@@ -386,6 +401,7 @@ continue:
 	else:
 
 	out PORTC, temp ; write value to PORTC
+	pop counter
 	ret ; return to caller
 
 
