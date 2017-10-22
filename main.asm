@@ -71,7 +71,8 @@
 ;---------------------------------------------------------------------------------
 .equ NUMSTATIONS = 0
 .equ STATIONNAMES = 1
-
+.equ TIMESTATIONS = 2
+.equ STOPTIME = 3
 
 ;---------------------------------------------------------------------------------
 ;; END EQU declarations
@@ -159,7 +160,7 @@ do_lcd_command 0b00001110 ; Cursor on, bar, no blink
 	do_lcd_data 'O'
 	do_lcd_data 'N'
 	do_lcd_data 'S'
-
+	do_lcd_data ' '
 	clr temp
 	sts status,temp
 	rjmp main
@@ -182,7 +183,9 @@ main:
 
 
 load_num_stations:
-	
+	ldi zl, low(Num_stations)
+	ldi zh, high(Num_stations)
+	clr counter
 	rcall keypad
 	clr temp
 	ldi temp,1
@@ -210,6 +213,7 @@ load_station_names:
 	do_lcd_data 'O'
 	do_lcd_data 'N'
 	do_lcd_data 'S'
+	
 	
 	ldi yl,low(Num_stations)
 	ldi yh,high(Num_stations)
@@ -256,7 +260,7 @@ brne skipconv ; if the result is non-zero, ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 rcall convert ; if bit is clear, convert the bitcode            ;;;KEY CHANGE HERE AFTER HERE!!!         
 cpi temp,14 ;;;;if user strikes * then rather than jmp back into keypad go back to keypad caller
 breq return ;;;;This return will call back to caller from main 
-sts Num_stations,temp
+st z+,temp
 
 
 jmp keypad ; and start again
@@ -341,10 +345,37 @@ convert_end:
 		do_lcd_command 0b00000001 ; clear display
 		clr counter	
 
-		lcd_limit:
-		mov r16,temp
-		do_lcd_data_mov
+		do_lcd_data 'T'
+		do_lcd_data 'O'
+		do_lcd_data 'O'
+		do_lcd_data ' '
+		do_lcd_data 'L'
+		do_lcd_data 'O'
+		do_lcd_data 'N'
+		do_lcd_data 'G'
 
+													///FIX ERROR MESSAGE BRANCHING HERE FOR MORE THAN 10 CHARS
+		lcd_limit:
+		lds temp2,status
+		cpi temp2,0
+		breq num_print
+		cpi temp2,1
+		breq letter_print
+		cpi temp2,2
+		breq letter_print
+		cpi temp2,3
+		breq letter_print
+
+num_print:
+	mov r16,temp
+	do_lcd_data_mov
+	jmp continue
+	
+letter_print:
+													//ADD LETTER PROCESSING HERE //////////////////////
+	jmp continue 	
+
+continue:
 	sub temp,tempNum
 	;ldi temp,14
 	sleep50ms
@@ -358,15 +389,7 @@ convert_end:
 	ret ; return to caller
 
 
-finish_input: //UP TO HERE /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	clr yl
-	clr yh
-	ldi yl,low(temp_letters)
-	ldi yh,high(temp_letters)
-	ld temp,y+ ;;copy in what we received from user input into num stations dseg
-	sts Num_stations,temp
-	pop temp
-	ret ;;ret call here should return back to load_num_stations to line after keypad is called
+
 
 	
 
