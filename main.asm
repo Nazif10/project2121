@@ -211,6 +211,15 @@ load_station_names:
 	do_lcd_data 'N'
 	do_lcd_data 'S'
 	
+	ldi yl,low(Num_stations)
+	ldi yh,high(Num_stations)
+
+	ld temp,y+
+	ldi tempNum,48
+	add temp,tempNum
+	mov r16,temp
+	do_lcd_data_mov
+
 	jmp end
 	end: rjmp end
 
@@ -242,9 +251,13 @@ mov temp2, temp
 and temp2, mask ; check masked bit
 brne skipconv ; if the result is non-zero, ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;UNCOMMENT
 ; we need to look again
+
+
 rcall convert ; if bit is clear, convert the bitcode            ;;;KEY CHANGE HERE AFTER HERE!!!         
 cpi temp,14 ;;;;if user strikes * then rather than jmp back into keypad go back to keypad caller
 breq return ;;;;This return will call back to caller from main 
+sts Num_stations,temp
+
 
 jmp keypad ; and start again
 
