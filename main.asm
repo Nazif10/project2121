@@ -187,6 +187,9 @@ load_num_stations:
 	ldi zl, low(Num_stations)
 	ldi zh, high(Num_stations)
 	clr counter
+
+	ldi yl,low(temp_letters)
+	ldi yh,high(temp_letters)
 	rcall keypad
 	clr temp
 	ldi temp,1
@@ -200,36 +203,37 @@ load_num_stations:
 
 load_station_names:
 
-
-	
 	ldi incrementer,1
 
 	input_names:
-	ldi yl,low(Num_stations)	;grab number of stations from dseg
-	ldi yh,high(Num_stations)	;grab num_stations every iteration as temp2 changes when keypad is called
-	ldi temp,1	
-	ld temp2,y+
-	add temp2,temp				;add one as incrementer is indexed from 1 
-	cp incrementer,temp2
+		ldi yl,low(Num_stations)	;grab number of stations from dseg
+		ldi yh,high(Num_stations)	;grab num_stations every iteration as temp2 changes when keypad is called
+		ldi temp,1	
+		ld temp2,y
+		add temp2,temp				;add one as incrementer is indexed from 1 
+		cp incrementer,temp2
 
-	breq done_stat_names
-	do_lcd_command 0b00000001 ; clear display
-	do_lcd_data 'S'
-	do_lcd_data 'T'
-	do_lcd_data 'A'
-	do_lcd_data 'T'
-	do_lcd_data 'N'
-	do_lcd_data 'A'	
-	do_lcd_data 'M'
+		breq done_stat_names
+		do_lcd_command 0b00000001 ; clear display
+		do_lcd_data 'S'
+		do_lcd_data 'T'
+		do_lcd_data 'A'
+		do_lcd_data 'T'
+		do_lcd_data 'N'
+		do_lcd_data 'A'	
+		do_lcd_data 'M'
 	
-	ldi tempNum,48
-	mov r16,incrementer
-	add r16,tempNum
-	do_lcd_data_mov
-	do_lcd_data ' '
-	inc incrementer 
-	rcall keypad
-	rjmp input_names
+		ldi tempNum,48
+		mov r16,incrementer	;;print out station number to input name of 
+		add r16,tempNum
+		do_lcd_data_mov
+		do_lcd_data ' '
+		
+		ldi yl,low(temp_letters)
+		ldi yh,high(temp_letters)
+		inc incrementer 
+		rcall keypad
+		rjmp input_names
 
 	done_stat_names:
 	do_lcd_command 0b00000001 ; clear display
@@ -346,18 +350,14 @@ convert_end:
 
 
 
+	st y+,temp ;;insert raw number/letter (with ascii subtracted) into temp hold for letters
 
 	;ldi temp,5 ;;;;;;;;	UNCOMMENT DEBUG   (COMMENT)
 	;st z+,temp ;;;;;;;;;;;;;;;;;UNCOMMENT DEBUG  (COMMENT)
-	add temp,tempNum;;;;;;;;;;;UNCOMMENT DEBUG  (UNCOMMENT)
-	;;;;;;experimental;;;;
-	ldi yl,low(temp_letters)
-	ldi yh,high(temp_letters)
 	
-	st y+,temp
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 	inc counter
-	cpi counter,10
+	cpi counter,20
 	brlo lcd_limit
 		do_lcd_command 0b00000001 ; clear display
 		clr counter	
@@ -372,7 +372,8 @@ convert_end:
 		do_lcd_data 'G'
 
 													///FIX ERROR MESSAGE BRANCHING HERE FOR MORE THAN 10 CHARS
-		lcd_limit:
+
+lcd_limit:
 		lds temp2,status
 		cpi temp2,0
 		breq num_print
@@ -384,6 +385,7 @@ convert_end:
 		breq letter_print
 
 num_print:
+	add temp,tempNum;;;;;;;;;;;UNCOMMENT DEBUG  (UNCOMMENT)
 	;ldi temp,14
 	mov r16,temp
 	do_lcd_data_mov
@@ -391,8 +393,103 @@ num_print:
 	
 letter_print:
 	;ldi temp,14						/////UNCOMMENT TO DEBUG
-													//ADD LETTER PROCESSING HERE //////////////////////
+													
+	cpi tempNum,55	;;if it's a letter we go into letter processing
+	breq process_letters
+	add temp,tempNum;;;;;;;;;;;UNCOMMENT DEBUG  (UNCOMMENT)
 	jmp continue 	
+
+process_letters:	;;if we hit a letter have to process number + letter pair to make a ascii letter
+	ldi yl,low(temp_letters)
+	ldi yh,high(temp_letters)	
+	ld temp,y+		;;temp holds an integer number
+		
+		cpi temp,2
+		breq process_2
+		cpi temp,3
+		breq process_3
+		cpi temp,4
+		breq process_4
+		cpi temp,5
+		breq process_5
+		cpi temp,6					;;;if else block to process numbers 2-9 and set them up for letter processing
+		breq process_6
+		cpi temp,7
+		breq process_7
+		cpi temp,8
+		breq process_8
+		cpi temp,9
+		breq process_9
+		
+
+	continue_process_letters:
+
+	ld temp2,y+	;;holds the letter to symbolise which number letter user wants from keypad
+		
+		cpi temp2,10
+		breq process_A
+		cpi temp2,11
+		breq process_B
+		cpi temp2,12
+		breq process_C
+		cpi temp2,13
+		breq process_D
+
+
+	finish_process_letters:	
+	add temp,temp2
+	add temp,tempNum
+	mov r16,temp
+	do_lcd_data_mov
+	jmp continue	;; watch out in continue it has sub temp,tempNum DEBUG ALERT
+
+process_A:
+	ldi temp2,0
+	jmp finish_process_letters	
+
+process_B:
+	ldi temp2,1
+	jmp finish_process_letters	
+
+process_C:
+	ldi temp2,2
+	jmp finish_process_letters	
+process_D:
+	ldi temp2,3
+	jmp finish_process_letters	
+
+process_2:
+	ldi temp,10
+	jmp continue_process_letters
+
+process_3:
+	ldi temp,13
+	jmp continue_process_letters
+
+process_4:
+	ldi temp,16
+	jmp continue_process_letters
+
+process_5:
+	ldi temp,19
+	jmp continue_process_letters
+
+process_6:
+	ldi temp,22
+	jmp continue_process_letters
+
+process_7:
+	ldi temp,25
+	jmp continue_process_letters
+
+process_8:
+	ldi temp,29
+	jmp continue_process_letters
+
+process_9:
+	ldi temp,32
+	jmp continue_process_letters
+
 
 continue:
 	sub temp,tempNum    ;;;;;;; UNCOMMENT DEBUG
