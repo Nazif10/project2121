@@ -181,6 +181,9 @@ main:
 	cpi temp,STATIONNAMES
 	breq load_station_names
 
+	cpi temp,TIMESTATIONS
+	breq call_station_times
+
 
 
 load_num_stations:
@@ -201,6 +204,8 @@ load_num_stations:
 	do_lcd_data_mov
 	rjmp main
 
+call_station_times:
+	rjmp load_station_times
 load_station_names:
 	ldi zl, low(Station_names)
 	ldi zh, high(Station_names)
@@ -237,6 +242,9 @@ load_station_names:
 		rjmp input_names
 
 	done_stat_names:
+	ldi temp2, TIMESTATIONS
+	sts status,temp2		;;done here time to go to station times
+	rjmp main
 	do_lcd_command 0b00000001 ; clear display
 	do_lcd_data 'D'
 	do_lcd_data 'O'
@@ -246,8 +254,53 @@ load_station_names:
 
 
 
+	
+
+load_station_times:
+	ldi zl, low(Station_names)
+	ldi zh, high(Station_names)
+	do_lcd_command 0b00000001 ; clear display
+
+	print:
+		ld temp,z+
+		cpi temp,'.'
+		breq end
+		mov r16,temp
+		do_lcd_data_mov
+		rjmp print
+/*	ldi incrementer,1
+	print_names:
+		ldi yl,low(Num_stations)	;grab number of stations from dseg
+		ldi yh,high(Num_stations)
+		do_lcd_command 0b00000001 ; clear display
+		ldi temp,1	
+		ld temp2,y
+		add temp2,temp				;add one as incrementer is indexed from 1 
+		cp incrementer,temp2
+		breq done_print
+		inc incrementer 
+		rcall keypad
+		print_loop:
+
+			ld temp,z+
+			cpi temp, '.'
+			breq print_names
+			mov r16,temp
+			do_lcd_data_mov
+			rjmp print_loop */
+
+	done_print:
+		do_lcd_command 0b00000001 ; clear display
+		do_lcd_data 'D'
+		do_lcd_data 'O'
+		do_lcd_data 'N'
+		do_lcd_data 'E'
+		do_lcd_data '!'	
+		
 	jmp end
 	end: rjmp end
+
+
 
 return :  //////////////HACK TOFIX RCALL ISSUE 
 	lds temp2,status
