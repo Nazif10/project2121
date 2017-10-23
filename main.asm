@@ -86,7 +86,7 @@
 Num_stations: ;;holds number of stations on network
 	.byte 1
 
-Station_names: ;;holds a string of station names separated by '.' character
+Station_names: ;;holds a string of station names separated by '.' character HOLDS ASCII VALS OF STATION_NAMES
 	.byte 110
 
 Station_times: ;;holds time between consecutive stations
@@ -434,6 +434,7 @@ process_letters:	;;if we hit a letter have to process number + letter pair to ma
 	add temp,tempNum
 	mov r16,temp
 	do_lcd_data_mov
+	add temp,tempNum ;;add tempNum again as it will be subtracted in continue, we want to add ascii ready names to Station_names dseg
 	ldi yl,low(temp_letters)
 	ldi yh,high(temp_letters)
 	jmp continue	;; watch out in continue it has sub temp,tempNum DEBUG ALERT
