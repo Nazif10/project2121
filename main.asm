@@ -206,6 +206,7 @@ load_num_stations:
 
 call_station_times:
 	rjmp load_station_times
+
 load_station_names:
 	ldi zl, low(Station_names)
 	ldi zh, high(Station_names)
@@ -254,42 +255,63 @@ load_station_names:
 
 
 
-	
+	jmp end
+	end: rjmp end
 
 load_station_times:
-	ldi zl, low(Station_names)
-	ldi zh, high(Station_names)
-	do_lcd_command 0b00000001 ; clear display
+	ldi zl, low(Station_times)
+	ldi zh, high(Station_times)
 
-	print:
-		ld temp,z+
-		cpi temp,'.'
-		breq end
-		mov r16,temp
-		do_lcd_data_mov
-		rjmp print
-/*	ldi incrementer,1
-	print_names:
+	ldi incrementer,1
+	
+	get_times:
 		ldi yl,low(Num_stations)	;grab number of stations from dseg
-		ldi yh,high(Num_stations)
-		do_lcd_command 0b00000001 ; clear display
+		ldi yh,high(Num_stations)	;grab num_stations every iteration as temp2 changes when keypad is called
 		ldi temp,1	
 		ld temp2,y
 		add temp2,temp				;add one as incrementer is indexed from 1 
 		cp incrementer,temp2
-		breq done_print
+		breq done_times
+		ldi tempNum,48
+		do_lcd_command 0b00000001 ; clear display
+		do_lcd_data 'S'
+		do_lcd_data 'T'
+		mov r16,incrementer
+		add r16,tempNum
+		do_lcd_data_mov
+		do_lcd_data ' '
+		do_lcd_data 'T'
+		do_lcd_data 'O'
+		sub r16,tempNum
+		inc r16
+		add r16,tempNum
+		
+		
+		do_lcd_data_mov
+		do_lcd_data ' '
 		inc incrementer 
 		rcall keypad
-		print_loop:
+		rjmp get_times
 
-			ld temp,z+
-			cpi temp, '.'
-			breq print_names
-			mov r16,temp
-			do_lcd_data_mov
-			rjmp print_loop */
 
-	done_print:
+	done_times:
+		do_lcd_command 0b00000001 ; clear display
+		do_lcd_data 'S'
+		do_lcd_data 'T'
+		do_lcd_data ' '
+		ldi tempNum,48
+		mov r16,incrementer
+		add r16,tempNum
+		do_lcd_data_mov
+		do_lcd_data ' '
+		do_lcd_data 'T'
+		do_lcd_data 'O'
+		do_lcd_data ' '
+		do_lcd_data 'S'
+		do_lcd_data 'T'
+		do_lcd_data '1'
+		rcall keypad
+
 		do_lcd_command 0b00000001 ; clear display
 		do_lcd_data 'D'
 		do_lcd_data 'O'
@@ -297,14 +319,16 @@ load_station_times:
 		do_lcd_data 'E'
 		do_lcd_data '!'	
 		
-	jmp end
-	end: rjmp end
+	jmp end_no
+	end_no: rjmp end
 
 
 
 return :  //////////////HACK TOFIX RCALL ISSUE 
 	lds temp2,status
 	cpi temp2,1
+	breq add_asterisk
+	cpi temp2,2
 	breq add_asterisk
 	ret
 add_asterisk:
@@ -426,9 +450,9 @@ lcd_limit:
 		cpi temp2,1
 		breq letter_print
 		cpi temp2,2
-		breq letter_print
+		breq num_print
 		cpi temp2,3
-		breq letter_print
+		breq num_print
 
 num_print:
 	add temp,tempNum;;;;;;;;;;;UNCOMMENT DEBUG  (UNCOMMENT)
