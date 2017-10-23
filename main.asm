@@ -441,6 +441,8 @@ process_letters:	;;if we hit a letter have to process number + letter pair to ma
 	add temp,tempNum
 	mov r16,temp
 	do_lcd_data_mov
+	ldi yl,low(temp_letters)
+	ldi yh,high(temp_letters)
 	jmp continue	;; watch out in continue it has sub temp,tempNum DEBUG ALERT
 
 process_A:
