@@ -202,7 +202,8 @@ load_num_stations:
 	rjmp main
 
 load_station_names:
-
+	ldi zl, low(Station_names)
+	ldi zh, high(Station_names)
 	ldi incrementer,1
 
 	input_names:
@@ -249,6 +250,13 @@ load_station_names:
 	end: rjmp end
 
 return :  //////////////HACK TOFIX RCALL ISSUE 
+	lds temp2,status
+	cpi temp2,1
+	breq add_asterisk
+	ret
+add_asterisk:
+	ldi temp2,'.'
+	st z+,temp2
 	ret
 keypad:
 ;push counter
@@ -282,7 +290,7 @@ rcall convert ; if bit is clear, convert the bitcode            ;;;KEY CHANGE HE
 cpi temp,14 ;;;;if user strikes * then rather than jmp back into keypad go back to keypad caller
 breq return ;;;;This return will call back to caller from main 
 st z+,temp
-
+clr temp
 
 jmp keypad ; and start again
 
@@ -355,23 +363,8 @@ convert_end:
 	;ldi temp,5 ;;;;;;;;	UNCOMMENT DEBUG   (COMMENT)
 	;st z+,temp ;;;;;;;;;;;;;;;;;UNCOMMENT DEBUG  (COMMENT)
 	
-
-	inc counter
-	cpi counter,20
-	brlo lcd_limit
-		do_lcd_command 0b00000001 ; clear display
-		clr counter	
-
-		do_lcd_data 'T'
-		do_lcd_data 'O'
-		do_lcd_data 'O'
-		do_lcd_data ' '
-		do_lcd_data 'L'
-		do_lcd_data 'O'
-		do_lcd_data 'N'
-		do_lcd_data 'G'
-
-													///FIX ERROR MESSAGE BRANCHING HERE FOR MORE THAN 10 CHARS
+	jmp lcd_limit
+	
 
 lcd_limit:
 		lds temp2,status
