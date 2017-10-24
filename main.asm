@@ -289,6 +289,8 @@ load_station_times:
 		
 		do_lcd_data_mov
 		do_lcd_data ' '
+		ldi yl,low(temp_letters)
+		ldi yh,high(temp_letters)
 		inc incrementer 
 		rcall keypad
 		rjmp get_times
