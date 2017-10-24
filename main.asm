@@ -135,33 +135,33 @@ clr r16
 out PORTF, r16
 out PORTA, r16
 
-;do_lcd_command 0b00111000 ; 2x5x7
-;rcall sleep_5ms
-;do_lcd_command 0b00111000 ; 2x5x7
-;rcall sleep_1ms
-;do_lcd_command 0b00111000 ; 2x5x7
-;do_lcd_command 0b00111000 ; 2x5x7
-;do_lcd_command 0b00001000 ; display off?
-;do_lcd_command 0b00000001 ; clear display
-;do_lcd_command 0b00000110 ; increment, no display shift
-;do_lcd_command 0b00001110 ; Cursor on, bar, no blink
+do_lcd_command 0b00111000 ; 2x5x7
+rcall sleep_5ms
+do_lcd_command 0b00111000 ; 2x5x7
+rcall sleep_1ms
+do_lcd_command 0b00111000 ; 2x5x7
+do_lcd_command 0b00111000 ; 2x5x7
+do_lcd_command 0b00001000 ; display off?
+do_lcd_command 0b00000001 ; clear display
+do_lcd_command 0b00000110 ; increment, no display shift
+do_lcd_command 0b00001110 ; Cursor on, bar, no blink
 
 
 
-;	do_lcd_data 'N'
-;	do_lcd_data 'U'
-;	do_lcd_data 'M'
+	do_lcd_data 'N'
+	do_lcd_data 'U'
+	do_lcd_data 'M'
 
-;	do_lcd_data ' '					//RESET DEBUG UNCOMMENT ALL 
-;	do_lcd_data 'S'
-;	do_lcd_data 'T'
-;	do_lcd_data 'A'
-;	do_lcd_data 'T'
-;	do_lcd_data 'I'
-;	do_lcd_data 'O'
-;	do_lcd_data 'N'
-;	do_lcd_data 'S'
-;	do_lcd_data ' '
+	do_lcd_data ' '
+	do_lcd_data 'S'
+	do_lcd_data 'T'
+	do_lcd_data 'A'
+	do_lcd_data 'T'
+	do_lcd_data 'I'
+	do_lcd_data 'O'
+	do_lcd_data 'N'
+	do_lcd_data 'S'
+	do_lcd_data ' '
 	clr temp
 	sts status,temp
 	rjmp main
@@ -172,8 +172,6 @@ out PORTA, r16
 
 main:
 	clr temp
-	ldi temp,2 ;;;DEBUG COMMENT TO REMOVE
-	sts status,temp ;;;DEBUG COMMENT TO REMOVE
 	lds temp,status
 
 	cpi temp,NUMSTATIONS	
@@ -227,7 +225,7 @@ load_station_names:
 		do_lcd_data 'S'
 		do_lcd_data 'T'
 		do_lcd_data 'A'
-		do_lcd_data 'T'			
+		do_lcd_data 'T'
 		do_lcd_data 'N'
 		do_lcd_data 'A'	
 		do_lcd_data 'M'
@@ -263,37 +261,34 @@ load_station_names:
 load_station_times:
 	ldi zl, low(Station_times)
 	ldi zh, high(Station_times)
-	ldi temp,2	;;;DEBUG COMMENT TO END
-	sts Num_stations,temp	;;;DEBUG COMMENT TO END
+
 	ldi incrementer,1
 	
 	get_times:
 		ldi yl,low(Num_stations)	;grab number of stations from dseg
 		ldi yh,high(Num_stations)	;grab num_stations every iteration as temp2 changes when keypad is called
-		ld temp,z						;;;DEBUG COMMENT TO END
-		ldi temp,1
-		clr temp2	;;;DEBUG COMMENT		
+		ldi temp,1	
 		ld temp2,y
 		add temp2,temp				;add one as incrementer is indexed from 1 
 		cp incrementer,temp2
 		breq done_times
 		ldi tempNum,48
-		;do_lcd_command 0b00000001 ; clear display
-		;do_lcd_data 'S'
-		;do_lcd_data 'T'
-		mov r16,incrementer			//DEBUG UNCOMMENT
+		do_lcd_command 0b00000001 ; clear display
+		do_lcd_data 'S'
+		do_lcd_data 'T'
+		mov r16,incrementer
 		add r16,tempNum
 		do_lcd_data_mov
-		;do_lcd_data ' '
-		;do_lcd_data 'T'
-		;do_lcd_data 'O'
-		;sub r16,tempNum
+		do_lcd_data ' '
+		do_lcd_data 'T'
+		do_lcd_data 'O'
+		sub r16,tempNum
 		inc r16
 		add r16,tempNum
 		
 		
 		do_lcd_data_mov
-		;do_lcd_data ' '
+		do_lcd_data ' '
 		inc incrementer 
 		rcall keypad
 		rjmp get_times
@@ -353,7 +348,7 @@ ldi temp, 0xFF ; implement a delay so the
 
 delay:
 dec temp
-;brne delay ;;;;;;;;;;;;;UNCOMMENT TO STOP DEBUGGING
+brne delay ;;;;;;;;;;;;;UNCOMMENT TO STOP DEBUGGING
 LDS temp, PINL ; read PORTL. Cannot use in 
 andi temp, ROWMASK ; read only the row bits
 cpi temp, 0xF ; check if any rows are grounded
@@ -364,7 +359,7 @@ clr row ; initial row
 rowloop:      
 mov temp2, temp
 and temp2, mask ; check masked bit
-;brne skipconv ; if the result is non-zero, ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;UNCOMMENT DEBUG
+brne skipconv ; if the result is non-zero, ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;UNCOMMENT DEBUG
 ; we need to look again
 
 
@@ -400,7 +395,7 @@ nextcol:
 	; Inputs come from registers row and col and output is in
 	; temp.
 convert:
-	jmp convert_end                             ;;;;;;;;;;;;;;;;;;;UNCOMMENT DEBUG
+	;jmp convert_end                             ;;;;;;;;;;;;;;;;;;;UNCOMMENT DEBUG
 	cpi col, 3 ; if column is 3 we have a letter
 	breq letters
 	cpi row, 3 ; if row is 3 we have a symbol or 0
@@ -437,8 +432,8 @@ zero:
 	clr temp ; set to zero
 convert_end:
 	;;cpi tempNum,48 when it's a number for if statement later
-	ldi temp,14						;;;DEBUG COMMENT TO END
-	ldi tempNum,48								;;;DEBUG COMMENT TO END
+
+
 
 	st y+,temp ;;insert raw number/letter (with ascii subtracted) into temp hold for letters
 
@@ -572,10 +567,10 @@ process_9:
 continue:
 	sub temp,tempNum    ;;;;;;; UNCOMMENT DEBUG
 	;ldi temp,14  ;;COMMENT TO DEBUG
-	;sleep50ms
-	;sleep50ms
-	;sleep50ms						////UNCOMMENT TO STOP DEBUG
-	;sleep50ms
+	sleep50ms
+	sleep50ms
+	sleep50ms						////UNCOMMENT TO STOP DEBUG
+	sleep50ms
 
 	else:
 
