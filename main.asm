@@ -175,7 +175,7 @@ do_lcd_command 0b00001110 ; Cursor on, bar, no blink
 
 main:
 	clr temp
-	lds temp,status
+	lds temp,status	;if else block to redirect code to the right stage of simulation
 
 	cpi temp,NUMSTATIONS	
 	breq load_num_stations
@@ -194,11 +194,11 @@ main:
 
 load_num_stations:
 	ldi zl, low(Num_stations)
-	ldi zh, high(Num_stations)
+	ldi zh, high(Num_stations)	;;initalise z pointer to point to beginning of dseg that holds number of stations
 	clr counter
 
 	ldi yl,low(temp_letters)
-	ldi yh,high(temp_letters)
+	ldi yh,high(temp_letters)	;;initialise y pointer to point to begininning of a temporary buffer that holds letters from keypad to be processed
 	rcall keypad
 	clr temp
 	ldi temp,1
