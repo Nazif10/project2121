@@ -98,6 +98,9 @@ temp_letters: ;;temporary hold for keys pressed before letter is displayed on lc
 status:	;;holds an int to represent what stage of simulation we are in
 	.byte 1
 
+Stop_time:
+	.byte 1 ;;holds the stations stop time
+
 
 ;---------------------------------------------------------------------------------
 ;; END DSEG
@@ -184,6 +187,9 @@ main:
 	cpi temp,TIMESTATIONS
 	breq call_station_times
 
+	cpi temp,STOPTIME
+	breq call_stop_time
+
 
 
 load_num_stations:
@@ -206,7 +212,8 @@ load_num_stations:
 
 call_station_times:
 	rjmp load_station_times
-
+call_stop_time:
+	rjmp load_stop_time
 load_station_names:
 	ldi zl, low(Station_names)
 	ldi zh, high(Station_names)
@@ -246,17 +253,7 @@ load_station_names:
 	ldi temp2, TIMESTATIONS
 	sts status,temp2		;;done here time to go to station times
 	rjmp main
-	do_lcd_command 0b00000001 ; clear display
-	do_lcd_data 'D'
-	do_lcd_data 'O'
-	do_lcd_data 'N'
-	do_lcd_data 'E'
-	do_lcd_data '!'
-
-
-
-	jmp end
-	end: rjmp end
+	
 
 load_station_times:
 	ldi zl, low(Station_times)
@@ -318,7 +315,39 @@ load_station_times:
 		do_lcd_data ' '
 		rcall keypad
 
-		do_lcd_command 0b00000001 ; clear display
+		ldi temp2, STOPTIME
+		sts status,temp2		;;done here time to go to stop time
+		rjmp main
+
+		
+
+load_stop_time:
+	ldi zl, low(Stop_time)	
+	ldi zh,high(Stop_time)
+	clr counter
+	ldi yl,low(temp_letters)
+	ldi yh,high(temp_letters)
+	do_lcd_command 0b00000001 ; clear display
+	;do_lcd_data 'E'
+	;do_lcd_data 'N'
+	;do_lcd_data 'T'
+	;do_lcd_data 'E'
+	;do_lcd_data 'R'
+	;do_lcd_data ' '
+	do_lcd_data 'S'
+	do_lcd_data 'T'
+	do_lcd_data 'O'
+	do_lcd_data 'P'
+	do_lcd_data ' '
+	do_lcd_data 'T'
+	do_lcd_data 'I'
+	do_lcd_data 'M'
+	do_lcd_data 'E'
+	do_lcd_data ' '
+
+	rcall keypad
+
+	do_lcd_command 0b00000001 ; clear display
 		do_lcd_data 'D'
 		do_lcd_data 'O'
 		do_lcd_data 'N'
@@ -326,9 +355,7 @@ load_station_times:
 		do_lcd_data '!'	
 		
 	jmp end_no
-	end_no: rjmp end
-
-
+	end_no: rjmp end_no
 
 return :  //////////////HACK TOFIX RCALL ISSUE 
 	lds temp2,status
@@ -447,17 +474,17 @@ convert_end:
 	;st z+,temp ;;;;;;;;;;;;;;;;;UNCOMMENT DEBUG  (COMMENT)
 	
 	jmp lcd_limit
-	
+
 
 lcd_limit:
 		lds temp2,status
-		cpi temp2,0
+		cpi temp2,NUMSTATIONS
 		breq num_print
-		cpi temp2,1
+		cpi temp2,STATIONNAMES
 		breq letter_print
-		cpi temp2,2
+		cpi temp2,TIMESTATIONS
 		breq num_print
-		cpi temp2,3
+		cpi temp2,STOPTIME
 		breq num_print
 
 num_print:
