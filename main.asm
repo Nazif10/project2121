@@ -26,6 +26,12 @@
 		rcall sleep_5ms
 .endmacro
 
+.macro sleep200ms
+		rcall sleep_50ms
+		rcall sleep_50ms
+		rcall sleep_50ms
+		rcall sleep_50ms
+.endmacro
 .macro do_lcd_command
 	ldi r16, @0
 	rcall lcd_command
@@ -346,6 +352,16 @@ load_stop_time:
 	do_lcd_data ' '
 
 	rcall keypad
+
+	do_lcd_command 0b00000001 ; clear display
+	do_lcd_data 'S'
+	do_lcd_data 'T'
+	do_lcd_data 'O'
+	rcall sleep_1s
+	rcall sleep_1s
+	rcall sleep_1s
+	rcall sleep_1s
+	rcall sleep_1s
 
 	do_lcd_command 0b00000001 ; clear display
 		do_lcd_data 'D'
@@ -703,4 +719,25 @@ sleep_5ms:
 	rcall sleep_1ms
 	rcall sleep_1ms
 	rcall sleep_1ms
+	ret
+
+sleep_50ms:
+	rcall sleep_5ms
+	rcall sleep_5ms
+	rcall sleep_5ms
+	rcall sleep_5ms
+	rcall sleep_5ms
+	rcall sleep_5ms
+	rcall sleep_5ms
+	rcall sleep_5ms
+	rcall sleep_5ms
+	rcall sleep_5ms
+	ret
+
+sleep_1s:
+	sleep200ms
+	sleep200ms
+	sleep200ms
+	sleep200ms
+	sleep200ms	
 	ret
