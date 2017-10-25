@@ -79,6 +79,7 @@
 .equ STATIONNAMES = 1
 .equ TIMESTATIONS = 2
 .equ STOPTIME = 3
+.equ STARTSIM = 4
 
 ;---------------------------------------------------------------------------------
 ;; END EQU declarations
@@ -196,6 +197,9 @@ main:
 	cpi temp,STOPTIME
 	breq call_stop_time
 
+	cpi temp,STARTSIM
+	breq call_start_sim
+
 
 
 load_num_stations:
@@ -220,6 +224,8 @@ call_station_times:
 	rjmp load_station_times
 call_stop_time:
 	rjmp load_stop_time
+call_start_sim:
+	jmp start_sim
 load_station_names:
 	ldi zl, low(Station_names)
 	ldi zh, high(Station_names)
@@ -334,12 +340,7 @@ load_stop_time:
 	ldi yl,low(temp_letters)
 	ldi yh,high(temp_letters)
 	do_lcd_command 0b00000001 ; clear display
-	;do_lcd_data 'E'
-	;do_lcd_data 'N'
-	;do_lcd_data 'T'
-	;do_lcd_data 'E'
-	;do_lcd_data 'R'
-	;do_lcd_data ' '
+
 	do_lcd_data 'S'
 	do_lcd_data 'T'
 	do_lcd_data 'O'
@@ -352,11 +353,24 @@ load_stop_time:
 	do_lcd_data ' '
 
 	rcall keypad
+	
+	ldi temp,STARTSIM
+	sts status,temp
 
+	rjmp main
+	
+
+start_sim:
 	do_lcd_command 0b00000001 ; clear display
-	do_lcd_data 'S'
-	do_lcd_data 'T'
+	do_lcd_data 'L'
 	do_lcd_data 'O'
+	do_lcd_data 'D'
+	do_lcd_data 'I'
+	do_lcd_data 'N'
+	do_lcd_data 'G'
+	do_lcd_data '5'
+	do_lcd_data 's'
+
 	rcall sleep_1s
 	rcall sleep_1s
 	rcall sleep_1s
