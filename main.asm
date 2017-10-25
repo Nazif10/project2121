@@ -269,7 +269,7 @@ load_station_times:
 		ldi yh,high(Num_stations)	;grab num_stations every iteration as temp2 changes when keypad is called
 		ldi temp,1	
 		ld temp2,y
-		add temp2,temp				;add one as incrementer is indexed from 1 
+		
 		cp incrementer,temp2
 		breq done_times
 		ldi tempNum,48
@@ -282,7 +282,10 @@ load_station_times:
 		do_lcd_data ' '
 		do_lcd_data 'T'
 		do_lcd_data 'O'
-		sub r16,tempNum
+		do_lcd_data ' '
+		do_lcd_data 'S'
+		do_lcd_data 'T'
+		mov r16,incrementer
 		inc r16
 		add r16,tempNum
 		
@@ -312,6 +315,7 @@ load_station_times:
 		do_lcd_data 'S'
 		do_lcd_data 'T'
 		do_lcd_data '1'
+		do_lcd_data ' '
 		rcall keypad
 
 		do_lcd_command 0b00000001 ; clear display
