@@ -364,6 +364,7 @@ start_sim:
 	do_lcd_command 0b00000001 ; clear display
 	do_lcd_data 'L'
 	do_lcd_data 'O'
+	do_lcd_data 'A'
 	do_lcd_data 'D'
 	do_lcd_data 'I'
 	do_lcd_data 'N'
@@ -377,6 +378,30 @@ start_sim:
 	rcall sleep_1s
 	rcall sleep_1s
 
+	ldi yl,low(Station_times)
+	ldi yh,high(Station_times)
+
+	ldi zl,low(Num_stations)
+	ldi zh,high(Num_stations)
+	ld temp,z
+	ldi incrementer,0
+	print_times:
+		cp incrementer,temp
+		breq done		
+		ld r16,y+
+		ldi tempNum,48
+		add r16,tempNum
+		do_lcd_data_mov
+		inc incrementer
+		rcall sleep_1s
+	rcall sleep_1s
+	rcall sleep_1s
+	rcall sleep_1s
+	rcall sleep_1s
+		rjmp print_times
+		
+	
+	done:
 	do_lcd_command 0b00000001 ; clear display
 		do_lcd_data 'D'
 		do_lcd_data 'O'
@@ -389,9 +414,7 @@ start_sim:
 
 return :  //////////////HACK TOFIX RCALL ISSUE 
 	lds temp2,status
-	cpi temp2,1
-	breq add_asterisk
-	cpi temp2,2
+	cpi temp2,STATIONNAMES
 	breq add_asterisk
 	ret
 add_asterisk:
