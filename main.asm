@@ -428,6 +428,8 @@ start_sim:
 	jmp end_no
 	end_no: rjmp end_no
 
+skip:
+	rjmp keypad
 return :  //////////////HACK TOFIX RCALL ISSUE 
 	lds temp2,status
 	cpi temp2,STATIONNAMES
@@ -468,6 +470,9 @@ brne skipconv ; if the result is non-zero, ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 rcall convert ; if bit is clear, convert the bitcode            ;;;KEY CHANGE HERE AFTER HERE!!!         
 cpi temp,14 ;;;;if user strikes * then rather than jmp back into keypad go back to keypad caller
 breq return ;;;;This return will call back to caller from main 
+lds col,status
+cpi col,STATIONNAMES
+breq skip
 st z+,temp
 clr temp
 
@@ -613,6 +618,7 @@ process_letters:	;;if we hit a letter have to process number + letter pair to ma
 	add temp,tempNum
 	mov r16,temp
 	do_lcd_data_mov
+	st z+,temp  ;;put temp in station_names dseg here
 	add temp,tempNum ;;add tempNum again as it will be subtracted in continue, we want to add ascii ready names to Station_names dseg
 	ldi yl,low(temp_letters)
 	ldi yh,high(temp_letters)
