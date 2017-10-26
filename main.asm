@@ -405,14 +405,48 @@ do_lcd_command 0b00000001 ; clear display
 
 	ldi xl,low(Station_times)
 	ldi xh,high(Station_times)
-	ld temp,z
-	ldi mask,0 ;; Let mask be new incrementer as incrementer conflicts with x pointer
+	ld temp,z	;load temp with number of stations in network
+	ldi mask,2 ;; Let mask be new incrementer as incrementer conflicts with x pointer
+
 	
+	ldi zl,low(Stop_time)
+	ldi zh,high(Stop_time)	;;temp2 with the fixed stop time per station
+
+	ld temp2,z
+	
+	do_lcd_command 0b00000001 ; clear display
+	do_lcd_data 'S'
+	do_lcd_data 'T'
+	do_lcd_data 'O'
+	do_lcd_data 'P'
+	do_lcd_data ' '
+
+	print_first_stop:
+		ld row,y+
+		cpi row,'.'
+		breq stop_first_station
+		mov r16,row
+		do_lcd_data_mov
+		rjmp print_first_stop
+
+stop_first_station:
+	ldi col,0
+	wait_first_stop:
+		cp col,temp2
+		breq simulation_loop			
+		rcall sleep_1s
+		inc col
+		rjmp wait_first_stop
+
 	simulation_loop:
 		cp mask,temp
 		breq done
 		
 		do_lcd_command 0b00000001 ; clear display
+		do_lcd_data 'T'
+		do_lcd_data 'O'
+		do_lcd_data ' '
+		movw z,y
 		print_station_loop:
 			ld row,y+
 			cpi row,'.'	;;row holds where y is pointing
@@ -423,10 +457,7 @@ do_lcd_command 0b00000001 ; clear display
 			rjmp print_station_loop			
 	
 		continue_simulation:
-			ldi zl,low(Stop_time)
-			ldi zh,high(Stop_time)
-
-			ld temp2,z
+			
 			ldi col,0
 
 			sleep_stop_loop:
@@ -438,11 +469,27 @@ do_lcd_command 0b00000001 ; clear display
 
 			done_stop_sleeping:
 
-				ld temp2,x+
+				do_lcd_command 0b00000001 ; clear display
+				do_lcd_data 'S'
+				do_lcd_data 'T'
+				do_lcd_data 'O'
+				do_lcd_data 'P'
+				do_lcd_data ' '
+
+				print_to_station_loop:
+					ld row,z+
+					cpi row,'.'
+					breq done_printing
+					mov r16,row
+					do_lcd_data_mov
+					rjmp print_to_station_loop
+
+			done_printing:						
+				ld tempNum,x+
 				ldi col,0
 			
 			sleep_loop:
-				cp col,temp2
+				cp col,tempNum
 				breq done_sleep
 				rcall sleep_1s
 
