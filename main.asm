@@ -111,7 +111,7 @@ Stop_time:
 
 ;---------------------------------------------------------------------------------
 ;; END DSEG
-;---------------------------------------------------------------------------------
+;---------------------`------------------------------------------------------------
 
 ;---------------------------------------------------------------------------------
 ;; CSEG
@@ -211,7 +211,7 @@ load_num_stations:
 	ldi yh,high(temp_letters)	;;initialise y pointer to point to begininning of a temporary buffer that holds letters from keypad to be processed
 	rcall keypad
 	clr temp
-	ldi temp,1
+	ldi temp,STATIONNAMES
 	sts status,temp
 	ldi temp2,48
 	add temp,temp2
@@ -428,8 +428,6 @@ start_sim:
 	jmp end_no
 	end_no: rjmp end_no
 
-skip:
-	rjmp keypad
 return :  //////////////HACK TOFIX RCALL ISSUE 
 	lds temp2,status
 	cpi temp2,STATIONNAMES
@@ -470,14 +468,22 @@ brne skipconv ; if the result is non-zero, ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 rcall convert ; if bit is clear, convert the bitcode            ;;;KEY CHANGE HERE AFTER HERE!!!         
 cpi temp,14 ;;;;if user strikes * then rather than jmp back into keypad go back to keypad caller
 breq return ;;;;This return will call back to caller from main 
-lds col,status
-cpi col,STATIONNAMES
+lds temp2,status 
+cpi temp2,STATIONNAMES
 breq skip
 st z+,temp
 clr temp
 
 jmp keypad ; and start again
 
+skip:
+	cpi tempNum,55
+	breq stationname_letter
+	rjmp keypad
+stationname_letter:
+	st z+,temp
+	clr temp
+	rjmp keypad						//UP TO HERE EEE!!!!
 skipconv:
 	inc row ; else move to the next row
 	lsl mask ; shift the mask to the next bit
@@ -618,7 +624,6 @@ process_letters:	;;if we hit a letter have to process number + letter pair to ma
 	add temp,tempNum
 	mov r16,temp
 	do_lcd_data_mov
-	st z+,temp  ;;put temp in station_names dseg here
 	add temp,tempNum ;;add tempNum again as it will be subtracted in continue, we want to add ascii ready names to Station_names dseg
 	ldi yl,low(temp_letters)
 	ldi yh,high(temp_letters)
