@@ -213,11 +213,9 @@ load_num_stations:
 	clr temp
 	ldi temp,1
 	sts status,temp
-	ldi temp2,48
-	add temp,temp2
-	do_lcd_command 0b00000001 ; clear display
-	mov r16,temp
-	do_lcd_data_mov
+
+
+
 	rjmp main
 
 call_station_times:
@@ -227,6 +225,7 @@ call_stop_time:
 call_start_sim:
 	jmp start_sim
 load_station_names:
+
 	ldi zl, low(Station_names)
 	ldi zh, high(Station_names)
 	ldi incrementer,1
@@ -264,12 +263,17 @@ load_station_names:
 	done_stat_names:
 	ldi temp2, TIMESTATIONS
 	sts status,temp2		;;done here time to go to station times
+
+
+
 	rjmp main
 	
 
 load_station_times:
 	ldi zl, low(Station_times)
 	ldi zh, high(Station_times)
+
+
 
 	ldi incrementer,1
 	
@@ -325,17 +329,30 @@ load_station_times:
 		do_lcd_data 'T'
 		do_lcd_data '1'
 		do_lcd_data ' '
+		ldi yl,low(temp_letters)
+		ldi yh,high(temp_letters)
 		rcall keypad
 
 		ldi temp2, STOPTIME
 		sts status,temp2		;;done here time to go to stop time
+
+
+
+
 		rjmp main
 
 		
 
 load_stop_time:
+	
+
+
+
 	ldi zl, low(Stop_time)	
 	ldi zh,high(Stop_time)
+
+
+
 	clr counter
 	ldi yl,low(temp_letters)
 	ldi yh,high(temp_letters)
@@ -351,11 +368,26 @@ load_stop_time:
 	do_lcd_data 'M'
 	do_lcd_data 'E'
 	do_lcd_data ' '
-
+	ldi yl,low(temp_letters)
+	ldi yh,high(temp_letters)
 	rcall keypad
 	
 	ldi temp,STARTSIM
 	sts status,temp
+
+
+		do_lcd_command 0b00000001 ; clear display
+	ldi zl,low(Num_stations)
+	ldi zh,high(Num_stations)
+	clr temp
+	ld temp,z
+	ldi tempNum,48
+	add temp,tempNum
+	mov r16,temp
+	do_lcd_data_mov
+	rcall sleep_1s
+	rcall sleep_1s
+	rjmp done
 
 	rjmp main
 	
@@ -377,46 +409,26 @@ start_sim:
 	rcall sleep_1s
 	rcall sleep_1s
 	rcall sleep_1s
-
-	ldi yl,low(Station_names)
-	ldi yh,high(Station_names)
-
+	
 	ldi zl,low(Num_stations)
 	ldi zh,high(Num_stations)
+	ldi tempNum,48
+	clr temp
 	ld temp,z
-	ldi mask,1 ;; Let mask be new incrementer as incrementer conflicts with x pointer
-	
-	simulation_loop:
-		cp mask,temp
-		breq done
-		
-		do_lcd_command 0b00000001 ; clear display
-		print_station_loop:
-			ld row,y+
-			cpi row,'.'	;;row holds where y is pointing
-			breq continue_simulation
-			;ld row,y+
-			mov r16,row
-			do_lcd_data_mov
-			rjmp print_station_loop			
-	
-		continue_simulation:
-			ldi zl,low(Stop_time)
-			ldi zh,high(Stop_time)	
-			ld temp2,z
-			ldi col,0
-			
-			sleep_loop:
-				cp col,temp2
-				breq done_sleep
-				rcall sleep_1s
+	add temp,tempNum
 
-				inc col
-				rjmp sleep_loop
-			done_sleep:		
-				;ld row,y+ ;DEBUG ALERT	
-				inc mask
-				rjmp simulation_loop
+	mov r16,temp
+	do_lcd_command 0b00000001 ; clear display
+	do_lcd_data_mov
+
+	rcall sleep_1s
+	rcall sleep_1s
+	rcall sleep_1s
+	rjmp done
+
+
+
+
 	done:
 	do_lcd_command 0b00000001 ; clear display
 		do_lcd_data 'D'
