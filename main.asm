@@ -376,24 +376,15 @@ load_stop_time:
 	sts status,temp
 
 
-		do_lcd_command 0b00000001 ; clear display
-	ldi zl,low(Num_stations)
-	ldi zh,high(Num_stations)
-	clr temp
-	ld temp,z
-	ldi tempNum,48
-	add temp,tempNum
-	mov r16,temp
-	do_lcd_data_mov
-	rcall sleep_1s
-	rcall sleep_1s
-	rjmp done
+
 
 	rjmp main
 	
 
 start_sim:
-	do_lcd_command 0b00000001 ; clear display
+
+
+do_lcd_command 0b00000001 ; clear display
 	do_lcd_data 'L'
 	do_lcd_data 'O'
 	do_lcd_data 'A'
@@ -409,26 +400,46 @@ start_sim:
 	rcall sleep_1s
 	rcall sleep_1s
 	rcall sleep_1s
-	
+
+	ldi yl,low(Station_names)
+	ldi yh,high(Station_names)
+
 	ldi zl,low(Num_stations)
 	ldi zh,high(Num_stations)
-	ldi tempNum,48
-	clr temp
 	ld temp,z
-	add temp,tempNum
+	ldi mask,1 ;; Let mask be new incrementer as incrementer conflicts with x pointer
+	
+	simulation_loop:
+		cp mask,temp
+		breq done
+		
+		do_lcd_command 0b00000001 ; clear display
+		print_station_loop:
+			ld row,y+
+			cpi row,'.'	;;row holds where y is pointing
+			breq continue_simulation
+			;ld row,y+
+			mov r16,row
+			do_lcd_data_mov
+			rjmp print_station_loop			
+	
+		continue_simulation:
+			ldi zl,low(Stop_time)
+			ldi zh,high(Stop_time)	
+			ld temp2,z
+			ldi col,0
+			
+			sleep_loop:
+				cp col,temp2
+				breq done_sleep
+				rcall sleep_1s
 
-	mov r16,temp
-	do_lcd_command 0b00000001 ; clear display
-	do_lcd_data_mov
-
-	rcall sleep_1s
-	rcall sleep_1s
-	rcall sleep_1s
-	rjmp done
-
-
-
-
+				inc col
+				rjmp sleep_loop
+			done_sleep:		
+				;ld row,y+ ;DEBUG ALERT	
+				inc mask
+				rjmp simulation_loop
 	done:
 	do_lcd_command 0b00000001 ; clear display
 		do_lcd_data 'D'
