@@ -406,7 +406,7 @@ do_lcd_command 0b00000001 ; clear display
 	ldi xl,low(Station_times)
 	ldi xh,high(Station_times)
 	ld temp,z	;load temp with number of stations in network
-	ldi mask,2 ;; Let mask be new incrementer as incrementer conflicts with x pointer
+	ldi mask,1 ;; Let mask be new incrementer as incrementer conflicts with x pointer
 
 	
 	ldi zl,low(Stop_time)
@@ -459,13 +459,13 @@ stop_first_station:
 		continue_simulation:
 			
 			ldi col,0
-
-			sleep_stop_loop:
-				cp col,temp2
+			ld tempNum,x+
+			sleep_to_loop:
+				cp col,tempNum
 				breq done_stop_sleeping
 				rcall sleep_1s
 				inc col
-				rjmp sleep_stop_loop
+				rjmp sleep_to_loop
 
 			done_stop_sleeping:
 
@@ -485,11 +485,11 @@ stop_first_station:
 					rjmp print_to_station_loop
 
 			done_printing:						
-				ld tempNum,x+
+				;ld tempNum,x+
 				ldi col,0
 			
 			sleep_loop:
-				cp col,tempNum
+				cp col,temp2
 				breq done_sleep
 				rcall sleep_1s
 
