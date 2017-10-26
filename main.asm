@@ -214,8 +214,6 @@ load_num_stations:
 	ldi temp,1
 	sts status,temp
 
-
-
 	rjmp main
 
 call_station_times:
@@ -240,13 +238,11 @@ load_station_names:
 
 		breq done_stat_names
 		do_lcd_command 0b00000001 ; clear display
-		do_lcd_data 'S'
-		do_lcd_data 'T'
-		do_lcd_data 'A'
-		do_lcd_data 'T'
+	
 		do_lcd_data 'N'
 		do_lcd_data 'A'	
 		do_lcd_data 'M'
+		do_lcd_data 'E'
 	
 		ldi tempNum,48
 		mov r16,incrementer	;;print out station number to input name of 
@@ -406,8 +402,11 @@ do_lcd_command 0b00000001 ; clear display
 
 	ldi zl,low(Num_stations)
 	ldi zh,high(Num_stations)
+
+	ldi xl,low(Station_times)
+	ldi xh,high(Station_times)
 	ld temp,z
-	ldi mask,1 ;; Let mask be new incrementer as incrementer conflicts with x pointer
+	ldi mask,0 ;; Let mask be new incrementer as incrementer conflicts with x pointer
 	
 	simulation_loop:
 		cp mask,temp
@@ -425,9 +424,22 @@ do_lcd_command 0b00000001 ; clear display
 	
 		continue_simulation:
 			ldi zl,low(Stop_time)
-			ldi zh,high(Stop_time)	
+			ldi zh,high(Stop_time)
+
 			ld temp2,z
 			ldi col,0
+
+			sleep_stop_loop:
+				cp col,temp2
+				breq done_stop_sleeping
+				rcall sleep_1s
+				inc col
+				rjmp sleep_stop_loop
+
+			done_stop_sleeping:
+
+				ld temp2,x+
+				ldi col,0
 			
 			sleep_loop:
 				cp col,temp2
