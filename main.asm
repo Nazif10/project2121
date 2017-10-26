@@ -440,7 +440,7 @@ stop_first_station:
 
 	simulation_loop:
 		cp mask,temp
-		breq done
+		breq last_station
 		
 		do_lcd_command 0b00000001 ; clear display
 		do_lcd_data 'T'
@@ -499,6 +499,65 @@ stop_first_station:
 				;ld row,y+ ;DEBUG ALERT	
 				inc mask
 				rjmp simulation_loop
+
+	last_station:
+		do_lcd_command 0b00000001 ; clear display
+		do_lcd_data 'T'
+		do_lcd_data 'O'
+		do_lcd_data ' '	
+		ldi yl,low(Station_names)
+		ldi yh,high(Station_names)
+		movw z,y
+		print_last_station:
+			ld row,y+
+			cpi row,'.'	;;row holds where y is pointing
+			breq continue_last_station
+			;ld row,y+
+			mov r16,row
+			do_lcd_data_mov
+			rjmp print_station_loop	
+
+		continue_last_station:
+		
+			ldi col,0
+			ld tempNum,x+	
+
+			sleep_last_station_to_loop:
+				cp col,tempNum
+				breq done_to_sleeping_last_station
+				rcall sleep_1s
+				inc col
+				rjmp sleep_last_station_to_loop
+
+			done_to_sleeping_last_station:
+				
+				do_lcd_command 0b00000001 ; clear display
+				do_lcd_data 'S'
+				do_lcd_data 'T'
+				do_lcd_data 'O'
+				do_lcd_data 'P'
+				do_lcd_data ' '
+
+				print_last_stop_loop:
+					ld row,z+
+					cpi row,'.'
+					breq done_last_station
+					mov r16,row
+					do_lcd_data_mov
+					rjmp print_last_stop_loop
+				
+				done_last_station:
+					ldi col,0
+
+					sleep_last_stop:
+						cp col,temp2
+						breq done
+						rcall sleep_1s
+						inc col
+						rjmp sleep_last_stop	
+								
+				
+
 	done:
 	do_lcd_command 0b00000001 ; clear display
 		do_lcd_data 'D'
