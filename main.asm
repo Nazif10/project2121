@@ -94,7 +94,7 @@ Num_stations: ;;holds number of stations on network
 	.byte 1
 
 Station_names: ;;holds a string of station names separated by '.' character HOLDS ASCII VALS OF STATION_NAMES
-	.byte 110
+	.byte 220
 
 Station_times: ;;holds time between consecutive stations
 	.byte 21
@@ -111,7 +111,7 @@ Stop_time:
 
 ;---------------------------------------------------------------------------------
 ;; END DSEG
-;---------------------`------------------------------------------------------------
+;---------------------------------------------------------------------------------
 
 ;---------------------------------------------------------------------------------
 ;; CSEG
@@ -211,7 +211,7 @@ load_num_stations:
 	ldi yh,high(temp_letters)	;;initialise y pointer to point to begininning of a temporary buffer that holds letters from keypad to be processed
 	rcall keypad
 	clr temp
-	ldi temp,STATIONNAMES
+	ldi temp,1
 	sts status,temp
 	ldi temp2,48
 	add temp,temp2
@@ -468,8 +468,9 @@ brne skipconv ; if the result is non-zero, ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 rcall convert ; if bit is clear, convert the bitcode            ;;;KEY CHANGE HERE AFTER HERE!!!         
 cpi temp,14 ;;;;if user strikes * then rather than jmp back into keypad go back to keypad caller
 breq return ;;;;This return will call back to caller from main 
-lds temp2,status 
-cpi temp2,STATIONNAMES
+
+lds col,status
+cpi col,STATIONNAMES;; check if we are on load station name mode, if so have to ignore numbers going into dseg
 breq skip
 st z+,temp
 clr temp
@@ -477,13 +478,15 @@ clr temp
 jmp keypad ; and start again
 
 skip:
-	cpi tempNum,55
-	breq stationname_letter
-	rjmp keypad
-stationname_letter:
+	cpi temp,10
+	brlo skip_integer ;;we have a number which we dont want to add to dseg so skip
 	st z+,temp
 	clr temp
-	rjmp keypad						//UP TO HERE EEE!!!!
+	rjmp keypad
+
+skip_integer:
+	clr temp
+	rjmp keypad
 skipconv:
 	inc row ; else move to the next row
 	lsl mask ; shift the mask to the next bit
